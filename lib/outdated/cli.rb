@@ -7,7 +7,7 @@ module Outdated
       Bundler.ui = Bundler::UI::Shell.new
       current_specs = Bundler.definition.resolve
       definition = Bundler.definition(true)
-      # definition.resolve_remotely!
+      definition.resolve_remotely!
       exit_status = 0
 
       # Bundler.load.dependencies does not include non dev dependencies, not
@@ -15,7 +15,7 @@ module Outdated
       # current_dependencies = Bundler.load.dependencies.map { |dep| [dep.name, dep] }.to_h
       gemfile_specs = current_specs # .select { |spec| current_dependencies.key? spec.name }
 
-      print "Inspecting defined gem versions"
+      print "Inspecting gem versions"
 
       gemfile_specs.sort_by(&:name).each do |used|
         name = used.name
