@@ -6,7 +6,7 @@ module Outdated
 
         body = response.body
         specs = JSON.parse(body).map do |spec|
-          spec['created_at'] = Time.parse(spec['created_at'])
+          spec['created_at'] = spec['created_at'].to_time
           spec['version'] = Gem::Version.new(spec['number'])
 
           OpenStruct.new(spec)

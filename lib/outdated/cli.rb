@@ -3,7 +3,7 @@
 module Outdated
   module CLI
     def self.run
-      one_week_ago = Time.now - 7 * 24 * 60 * 60 # 1 week ago
+      one_week_ago = 1.week.ago
       Bundler.ui = Bundler::UI::Shell.new
       current_specs = Bundler.definition.resolve
       definition = Bundler.definition(true)
@@ -28,22 +28,32 @@ module Outdated
         used = spec_set.get(used.version)
         recommended = spec_set.recommend(used, one_week_ago)
 
+        if recommended.nil?
+          puts "\n#{name} has no recommended versions. It might be too new."
+          exit_status = 1
+          next
+        end
+
         outdated = recommended.version > used.version
-        too_new = recommended.version < used.version
 
         if outdated
           puts "\n#{name} #{used.version} is outdated. " \
                "#{recommended.version} published #{recommended.created_at}."
           exit_status = 1
-        elsif too_new
+          next
+        end
+
+        too_new = recommended.version < used.version
+        if too_new
           puts "\n#{name} #{used.version} is too new and may contain bugs or " \
                'vulnerabilities that are as yet unknown. It was published ' \
                "#{used.created_at}. For now use #{recommended.version} " \
                'instead.'
           exit_status = 1
-        else
-          putc '.'
+          next
         end
+
+        putc '.'
       end
 
       puts "\nGem versions deemed to be sufficiently up-to-date." if exit_status == 0
