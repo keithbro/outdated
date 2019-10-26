@@ -4,9 +4,12 @@ module Outdated
   module CLI
     def self.run
       one_week_ago = Time.now - 7 * 24 * 60 * 60 # 1 week ago
+      Bundler.ui = Bundler::UI::Shell.new
       current_specs = Bundler.definition.resolve
       definition = Bundler.definition(true)
+      puts "Fetching definitions..."
       definition.resolve_remotely!
+      puts "Done."
       exit_status = 0
 
       current_specs.sort_by(&:name).each do |used|
