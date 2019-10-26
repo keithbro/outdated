@@ -7,33 +7,38 @@ module Outdated
       Bundler.ui = Bundler::UI::Shell.new
       current_specs = Bundler.definition.resolve
       definition = Bundler.definition(true)
-      definition.resolve_remotely!
+      # definition.resolve_remotely!
       exit_status = 0
 
-      current_dependencies = Bundler.load.dependencies.map { |dep| [dep.name, dep] }.to_h
-      gemfile_specs = current_specs.select { |spec| current_dependencies.key? spec.name }
+      # Bundler.load.dependencies does not include non dev dependencies, not
+      # sure why. TODO figure out.
+      # current_dependencies = Bundler.load.dependencies.map { |dep| [dep.name, dep] }.to_h
+      gemfile_specs = current_specs # .select { |spec| current_dependencies.key? spec.name }
+
+      print "Inspecting defined gem versions"
 
       gemfile_specs.sort_by(&:name).each do |used|
         name = used.name
-        # next unless name == 'http'
+        # puts "\n" + name
+        # next unless name == 's3_backup'
 
-        versions = Outdated::RubyGems.versions(name)
-        next if versions.empty?
+        spec_set = Outdated::RubyGems.spec_set(name)
+        next if spec_set.empty?
 
-        used = versions.get(used.version)
-        recommended = versions.recommend(used, one_week_ago)
+        used = spec_set.get(used.version)
+        recommended = spec_set.recommend(used, one_week_ago)
 
-        outdated = recommended.number > used.number
-        too_new = recommended.number < used.number
+        outdated = recommended.version > used.version
+        too_new = recommended.version < used.version
 
         if outdated
-          puts "\n#{name} #{used.number} is outdated. " \
-               "#{recommended.number} published #{recommended.created_at}."
+          puts "\n#{name} #{used.version} is outdated. " \
+               "#{recommended.version} published #{recommended.created_at}."
           exit_status = 1
         elsif too_new
-          puts "\n#{name} #{used.number} is too new and may contain bugs or " \
+          puts "\n#{name} #{used.version} is too new and may contain bugs or " \
                'vulnerabilities that are as yet unknown. It was published ' \
-               "#{used.created_at}. For now use #{recommended.number} " \
+               "#{used.created_at}. For now use #{recommended.version} " \
                'instead.'
           exit_status = 1
         else

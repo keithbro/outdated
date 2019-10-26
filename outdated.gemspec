@@ -30,6 +30,7 @@ Gem::Specification.new do |spec|
   spec.executables   = %w[safe]
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'activesupport'
   spec.add_dependency 'bundler', '~> 1.7'
   spec.add_dependency 'http'
 
