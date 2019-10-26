@@ -12,6 +12,6 @@ require_relative 'outdated/version'
 module Outdated
   class Error < StandardError; end
 
-  IMMATURE = 1
-  OUTDATED = 2
+  IMMATURE = 'Immature'
+  OUTDATED = 'Outdated'
 end

@@ -1,7 +1,11 @@
 {
-  "name": "outdated",
-  "rules": [
-    "Immature"
-  ],
-  "note": "New gem - trusted"
+  "exclusions": [
+    {
+      "gem": "outdated",
+      "rules": [
+        "Immature"
+      ],
+      "note": "New gem - trusted"
+    }
+  ]
 }

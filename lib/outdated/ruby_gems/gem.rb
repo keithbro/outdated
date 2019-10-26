@@ -1,11 +1,11 @@
 module Outdated
   module RubyGems
     class Gem
-      def self.from_response(response)
+      def self.from_response(name, response)
         return new if response.code == 404
 
         body = response.body
-        specs = JSON.parse(body).map { |spec| Outdated::RubyGems::Spec.from_response_object(spec) }
+        specs = JSON.parse(body).map { |spec| Outdated::RubyGems::Spec.from_response_object(name, spec) }
         new(specs)
       end
 
@@ -13,6 +13,12 @@ module Outdated
 
       def initialize(specs = [])
         @specs = specs
+
+        raise ArgumentError, "conflicting spec names" unless specs.uniq(&:name).count < 2
+      end
+
+      def name
+        specs.first.name
       end
 
       def empty?

@@ -3,6 +3,10 @@
 module Outdated
   module CLI
     def self.run
+      filename = '.outdated.json'
+      options = File.exist?(filename) ? JSON.parse(File.read(filename)) : {}
+      exclusions = options["exclusions"] || []
+
       Bundler.ui = Bundler::UI::Shell.new
       current_specs = Bundler.definition.resolve
       definition = Bundler.definition(true)
@@ -18,14 +22,19 @@ module Outdated
 
       gemfile_specs.sort_by(&:name).each do |used|
         name = used.name
+        puts name
+        gem_exclusions = exclusions.find { |exc| exc['gem'] == name } || {}
+        excluded_rules = gem_exclusions['rules'] || []
 
         gem = Outdated::RubyGems.gem(name)
-        next if gem.empty?
+        next if gem.specs.empty?
 
         used = gem.get(used.version)
         recommended_spec, code = gem.recommend(used, 1.week.ago)
 
         if code == Outdated::OUTDATED
+          next if excluded_rules.include? Outdated::OUTDATED
+
           puts "\n#{name} #{used.version} is outdated. " \
                "#{recommended_spec.version} published #{recommended_spec.created_at}."
           exit_status = 1
@@ -33,6 +42,8 @@ module Outdated
         end
 
         if code == Outdated::IMMATURE
+          next if excluded_rules.include? Outdated::IMMATURE
+
           puts "\n#{name} #{used.version} is too new and may contain bugs or " \
                'vulnerabilities that are as yet unknown. It was published ' \
                "#{used.created_at}."

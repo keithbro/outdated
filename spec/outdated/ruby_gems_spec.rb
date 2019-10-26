@@ -6,7 +6,7 @@ RSpec.describe Outdated::RubyGems do
 
     let(:name) { 'x' }
     let(:response) do
-      double(code: 200, body: JSON.generate([{ created_at: 5.weeks.ago.iso8601 }]))
+      double(code: 200, body: JSON.generate([{ created_at: 5.weeks.ago.iso8601, name: name, prerelease: false }]))
     end
 
     before do

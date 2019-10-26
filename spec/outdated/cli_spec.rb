@@ -50,5 +50,20 @@ RSpec.describe Outdated::CLI do
 
       it { is_expected.to eq(1) }
     end
+
+    context "when there are remote specs, no recommended ones but the gem is excluded" do
+      let(:currently_used_specs) { [spec] }
+      let(:remote_specs) { [spec] }
+      let(:config) { { exclusions: [{ "gem": gem.name, rules: [Outdated::IMMATURE] }] } }
+
+      before do
+        allow(gem).to receive(:recommend).and_return([nil, Outdated::IMMATURE])
+        allow(File)
+          .to receive(:read)
+          .and_return(JSON.generate(config))
+      end
+
+      it { is_expected.to eq(0) }
+    end
   end
 end
