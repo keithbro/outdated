@@ -14,12 +14,21 @@ RSpec.describe Outdated::RubyGems::SpecSet do
   describe '.from_response' do
     subject(:spec_set) { described_class.from_response(response) }
 
-    let(:response) do
-      double(code: 200, body: JSON.generate([{ created_at: 4.weeks.ago.iso8601, number: '1.2.3' }]))
+    context "when the response contains a spec" do
+      let(:response) do
+        double(code: 200, body: JSON.generate([{ created_at: 4.weeks.ago.iso8601, number: '1.2.3' }]))
+      end
+
+      it { is_expected.to be_a(Outdated::RubyGems::SpecSet) }
+      it { expect(spec_set.first.version).to eq(Gem::Version.new('1.2.3')) }
     end
 
-    it { is_expected.to be_a(Outdated::RubyGems::SpecSet) }
-    it { expect(spec_set.first.version).to eq(Gem::Version.new('1.2.3')) }
+    context "when the response was a 404" do
+      let(:response) { double(code: 404) }
+
+      it { is_expected.to be_a(Outdated::RubyGems::SpecSet) }
+      it { is_expected.to be_empty }
+    end
   end
 
   describe '#recommend' do

@@ -2,7 +2,7 @@ module Outdated
   module RubyGems
     class SpecSet
       def self.from_response(response)
-        return [] if response.code == 404
+        return new if response.code == 404
 
         body = response.body
         specs = JSON.parse(body).map do |spec|
@@ -16,7 +16,7 @@ module Outdated
 
       attr_reader :specs
 
-      def initialize(specs)
+      def initialize(specs = [])
         @specs = specs
       end
 
