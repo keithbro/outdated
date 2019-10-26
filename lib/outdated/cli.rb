@@ -22,7 +22,6 @@ module Outdated
 
       gemfile_specs.sort_by(&:name).each do |used|
         name = used.name
-        puts name
         gem_exclusions = exclusions.find { |exc| exc['gem'] == name } || {}
         excluded_rules = gem_exclusions['rules'] || []
 
