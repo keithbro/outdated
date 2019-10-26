@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe Outdated::RubyGems do
-  describe '.spec_set' do
-    subject(:spec_set) { described_class.spec_set(name) }
+  describe '.gem' do
+    subject(:gem) { described_class.gem(name) }
 
     let(:name) { 'x' }
     let(:response) do
@@ -13,7 +13,7 @@ RSpec.describe Outdated::RubyGems do
       allow(HTTP).to receive(:get).and_return(response)
     end
 
-    it { is_expected.to be_a(Outdated::RubyGems::SpecSet) }
-    it { expect(spec_set.size).to eq(1) }
+    it { is_expected.to be_a(Outdated::RubyGems::Gem) }
+    it { expect(gem.specs.count).to eq(1) }
   end
 end

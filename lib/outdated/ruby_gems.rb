@@ -2,9 +2,9 @@ require 'http'
 
 module Outdated
   module RubyGems
-    def self.spec_set(name)
+    def self.gem(name)
       response = HTTP.get("https://rubygems.org/api/v1/versions/#{name}.json")
-      Outdated::RubyGems::SpecSet.from_response(response)
+      Outdated::RubyGems::Gem.from_response(response)
     end
   end
 end

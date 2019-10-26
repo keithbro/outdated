@@ -3,7 +3,6 @@
 module Outdated
   module CLI
     def self.run
-      one_week_ago = 1.week.ago
       Bundler.ui = Bundler::UI::Shell.new
       current_specs = Bundler.definition.resolve
       definition = Bundler.definition(true)
@@ -19,36 +18,25 @@ module Outdated
 
       gemfile_specs.sort_by(&:name).each do |used|
         name = used.name
-        # puts "\n" + name
-        # next unless name == 's3_backup'
 
-        spec_set = Outdated::RubyGems.spec_set(name)
-        next if spec_set.empty?
+        gem = Outdated::RubyGems.gem(name)
+        next if gem.empty?
 
-        used = spec_set.get(used.version)
-        recommended = spec_set.recommend(used, one_week_ago)
+        used = gem.get(used.version)
+        recommended_spec, code = gem.recommend(used, 1.week.ago)
 
-        if recommended.nil?
-          puts "\n#{name} has no recommended versions. It might be too new."
-          exit_status = 1
-          next
-        end
-
-        outdated = recommended.version > used.version
-
-        if outdated
+        if code == Outdated::OUTDATED
           puts "\n#{name} #{used.version} is outdated. " \
-               "#{recommended.version} published #{recommended.created_at}."
+               "#{recommended_spec.version} published #{recommended_spec.created_at}."
           exit_status = 1
           next
         end
 
-        too_new = recommended.version < used.version
-        if too_new
+        if code == Outdated::IMMATURE
           puts "\n#{name} #{used.version} is too new and may contain bugs or " \
                'vulnerabilities that are as yet unknown. It was published ' \
-               "#{used.created_at}. For now use #{recommended.version} " \
-               'instead.'
+               "#{used.created_at}."
+          puts " For now use #{recommended_spec.version} instead." if recommended_spec.present?
           exit_status = 1
           next
         end
@@ -56,7 +44,7 @@ module Outdated
         putc '.'
       end
 
-      puts "\nGem versions deemed to be sufficiently up-to-date." if exit_status == 0
+      puts "\nGem versions deemed to be sufficiently up-to-date." if exit_status.zero?
       exit_status
     end
   end
