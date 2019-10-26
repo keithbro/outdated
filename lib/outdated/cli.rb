@@ -7,12 +7,13 @@ module Outdated
       Bundler.ui = Bundler::UI::Shell.new
       current_specs = Bundler.definition.resolve
       definition = Bundler.definition(true)
-      puts "Fetching definitions..."
       definition.resolve_remotely!
-      puts "Done."
       exit_status = 0
 
-      current_specs.sort_by(&:name).each do |used|
+      current_dependencies = Bundler.load.dependencies.map { |dep| [dep.name, dep] }.to_h
+      gemfile_specs = current_specs.select { |spec| current_dependencies.key? spec.name }
+
+      gemfile_specs.sort_by(&:name).each do |used|
         name = used.name
         # next unless name == 'http'
 
@@ -40,6 +41,7 @@ module Outdated
         end
       end
 
+      puts "\nGem versions deemed to be sufficiently up-to-date." if exit_status == 0
       exit_status
     end
   end
