@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'outdated/version'
-require 'http'
-
 module Outdated
   module CLI
     def self.run

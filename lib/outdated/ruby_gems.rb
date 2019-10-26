@@ -1,3 +1,5 @@
+require 'http'
+
 module Outdated
   module RubyGems
     def self.versions(name)
