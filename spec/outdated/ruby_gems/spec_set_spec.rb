@@ -3,17 +3,19 @@
 RSpec.describe Outdated::RubyGems::SpecSet do
   subject(:spec_set) { described_class.new(specs) }
 
-  let(:spec) do
-    OpenStruct.new(created_at: 5.weeks.ago, version: Gem::Version.new('1.2.3'))
-  end
+  let(:new_immature_spec) { OpenStruct.new(created_at: 1.weeks.ago, version: Gem::Version.new('1.2.4')) }
+  let(:new_mature_spec) { OpenStruct.new(created_at: 3.weeks.ago, version: Gem::Version.new('1.2.4')) }
+  let(:mature_spec) { OpenStruct.new(created_at: 4.weeks.ago, version: Gem::Version.new('1.2.3')) }
+  let(:old_mature_spec) { OpenStruct.new(created_at: 5.weeks.ago, version: Gem::Version.new('1.2.2')) }
+  let(:cut_off) { 2.weeks.ago }
 
-  let(:specs) { [spec] }
+  let(:specs) { [mature_spec] }
 
   describe '.from_response' do
     subject(:spec_set) { described_class.from_response(response) }
 
     let(:response) do
-      double(code: 200, body: JSON.generate([{ created_at: 5.weeks.ago.iso8601, number: '1.2.3' }]))
+      double(code: 200, body: JSON.generate([{ created_at: 4.weeks.ago.iso8601, number: '1.2.3' }]))
     end
 
     it { is_expected.to be_a(Outdated::RubyGems::SpecSet) }
@@ -23,14 +25,30 @@ RSpec.describe Outdated::RubyGems::SpecSet do
   describe '#recommend' do
     subject(:recommend) { spec_set.recommend(status_quo_spec, cut_off) }
 
-    let(:cut_off) { 2.weeks.ago }
+    let(:status_quo_spec) { mature_spec }
 
     context "when the only available spec is the one that is used" do
-      let(:status_quo_spec) { spec }
+      let(:specs) { [status_quo_spec] }
 
-      it 'recommends the status quo' do
-        expect(recommend).to eq(status_quo_spec)
-      end
+      it { is_expected.to eq(status_quo_spec) }
+    end
+
+    context "when a new patch is available but it's too new" do
+      let(:specs) { [new_immature_spec, status_quo_spec] }
+
+      it { is_expected.to eq(status_quo_spec) }
+    end
+
+    context "when a new patch is available and sufficiently old" do
+      let(:specs) { [new_mature_spec, status_quo_spec] }
+
+      it { is_expected.to eq(new_mature_spec) }
+    end
+
+    context "when the currently used spec is too new" do
+      let(:specs) { [old_mature_spec, status_quo_spec] }
+
+      it { is_expected.to eq(old_mature_spec) }
     end
   end
 end
