@@ -69,6 +69,7 @@ RSpec.describe Outdated::CLI do
 
       before do
         allow(gem).to receive(:recommend).and_return([nil, Outdated::IMMATURE])
+        allow(File).to receive(:exist?).and_return(true)
         allow(File)
           .to receive(:read)
           .and_return(JSON.generate(config))
