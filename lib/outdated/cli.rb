@@ -29,6 +29,8 @@ module Outdated
         next if gem.specs.empty?
 
         used = gem.get(used.version)
+        next unless used
+
         recommended_spec, code = gem.recommend(used, 1.week.ago)
 
         if code == Outdated::OUTDATED

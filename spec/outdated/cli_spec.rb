@@ -42,6 +42,17 @@ RSpec.describe Outdated::CLI do
       it { is_expected.to eq(0) }
     end
 
+    context "when using an unpublished gem" do
+      let(:currently_used_specs) do
+        [Outdated::RubyGems::Spec.new(version: Gem::Version.new('1.2.4'),
+                                      created_at: 1.week.ago,
+                                      name: spec.name,
+                                      prerelease: false)]
+      end
+
+      it { is_expected.to eq(0) }
+    end
+
     context "when there are remote specs but no recommended ones" do
       let(:currently_used_specs) { [spec] }
       let(:remote_specs) { [spec] }
